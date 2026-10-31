@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <script src="https://game-cdn.poki.com/scripts/v2/poki-sdk.js"></script>
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#102747" />
+    <title>Light Birds 3D</title>
+    <script type="module" crossorigin src="./assets/index-DzbPs3vW.js"></script>
+    <link rel="modulepreload" crossorigin href="./assets/web-CwH_cTtd.js">
+    <link rel="stylesheet" crossorigin href="./assets/index-BGW-cS1x.css">
+  </head>
+  <body>
+    <canvas id="scene"></canvas>
+
+    <!-- HUD inferior (mesma disposição do original) -->
+    <div id="hud" class="hidden">
+      <div id="hud-lives" data-i18n-title="lives"></div>
+      <div id="hud-gauge">
+        <div id="hud-gauge-fill"></div>
+        <div id="hud-gauge-target"></div>
+        <span id="hud-gauge-text">0% / 25%</span>
+      </div>
+      <div id="hud-level">Level 1</div>
+      <button id="hud-pause" class="icon-btn" data-i18n-title="paused" aria-label="Pause">
+        <svg viewBox="0 0 24 24" width="22" height="22"><rect x="6" y="5" width="4" height="14" rx="1.5" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1.5" fill="currentColor"/></svg>
+      </button>
+    </div>
+
+    <div id="toast" aria-live="polite"></div>
+    <div id="swipe-hint" data-i18n="rotateHint"></div>
+
+    <!-- Menu inicial -->
+    <section id="menu" class="screen">
+      <div class="menu-inner">
+        <h1 class="logo" aria-label="Light Birds">
+          <span class="logo-light">Light</span>
+          <span class="logo-birds">Birds</span>
+        </h1>
+        <p class="tagline" data-i18n="tagline"></p>
+        <div class="menu-buttons">
+          <button id="btn-continue" class="btn primary"></button>
+          <button id="btn-play" class="btn primary" data-i18n="play"></button>
+          <button id="btn-new" class="btn secondary" data-i18n="newGame"></button>
+          <div class="menu-row">
+            <button id="btn-howto" class="btn ghost" data-i18n="howTo"></button>
+            <button id="btn-settings" class="btn ghost" data-i18n="settings"></button>
+          </div>
+        </div>
+      </div>
+      <div class="menu-foot">
+        <span id="menu-version"></span>
+        <a id="menu-privacy" target="_blank" rel="noopener" data-i18n="privacy" hidden></a>
+      </div>
+    </section>
+
+    <!-- Configurações -->
+    <section id="settings" class="screen modal">
+      <div class="card">
+        <h2 data-i18n="settings"></h2>
+        <div class="row">
+          <span data-i18n="sound"></span>
+          <label class="toggle"><input type="checkbox" id="opt-sound" /><span></span></label>
+        </div>
+        <div class="row native-only">
+          <span data-i18n="haptics"></span>
+          <label class="toggle"><input type="checkbox" id="opt-haptics" /><span></span></label>
+        </div>
+        <div class="row">
+          <span data-i18n="language"></span>
+          <div class="seg" id="opt-lang">
+            <button data-v="pt">PT</button><button data-v="en">EN</button>
+          </div>
+        </div>
+        <div class="row">
+          <span data-i18n="quality"></span>
+          <div class="seg" id="opt-quality">
+            <button data-v="high" data-i18n="qualityHigh"></button><button data-v="low" data-i18n="qualityLow"></button>
+          </div>
+        </div>
+        <button id="settings-close" class="btn primary" data-i18n="close"></button>
+      </div>
+    </section>
+
+    <!-- Pausa -->
+    <section id="pause" class="screen modal">
+      <div class="card">
+        <h2 data-i18n="paused"></h2>
+        <button id="pause-resume" class="btn primary" data-i18n="resume"></button>
+        <button id="pause-settings" class="btn secondary" data-i18n="settings"></button>
+        <button id="pause-menu" class="btn ghost danger" data-i18n="menu"></button>
+      </div>
+    </section>
+
+    <!-- Nível concluído -->
+    <section id="complete" class="screen modal">
+      <div class="card celebrate">
+        <div class="chip" id="complete-level"></div>
+        <h2 data-i18n="levelComplete"></h2>
+        <div class="stats">
+          <div><b id="complete-percent">0%</b><span data-i18n="lit"></span></div>
+          <div><b id="complete-birds">0</b><span data-i18n="birdsLeft"></span></div>
+        </div>
+        <button id="complete-next" class="btn primary" data-i18n="nextLevel"></button>
+      </div>
+    </section>
+
+    <!-- Fim de jogo -->
+    <section id="gameover" class="screen modal">
+      <div class="card">
+        <h2 id="gameover-title"></h2>
+        <div class="go-gauge" aria-hidden="true">
+          <div class="go-fill" id="gameover-fill"></div>
+          <div class="go-target" id="gameover-target"></div>
+        </div>
+        <p id="gameover-sub"></p>
+        <p class="go-keep" data-i18n="goKeep"></p>
+        <div class="go-cta">
+          <button id="gameover-continue" class="btn primary">
+            <span class="go-row">
+              <span class="go-label"><svg class="go-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg><span id="gameover-continue-text"></span></span>
+              <span class="go-lives" id="gameover-lives"></span>
+            </span>
+            <small class="go-video" data-i18n="watchVideo"></small>
+          </button>
+          <div class="go-timer" aria-hidden="true"><i></i></div>
+        </div>
+        <p class="go-note" id="gameover-note"></p>
+        <button id="gameover-restart" class="btn secondary go-restart">
+          <span class="go-row"><span data-i18n="restartLevel"></span><span class="go-lives" id="gameover-restart-lives"></span></span>
+        </button>
+        <button id="gameover-menu" class="link-btn go-giveup" data-i18n="giveUp"></button>
+      </div>
+    </section>
+
+    <!-- Tutorial -->
+    <section id="tutorial" class="screen modal">
+      <div class="card tut" id="tut-card">
+        <div class="tut-head">
+          <span class="chip" id="tut-tag"></span>
+          <button id="tut-skip" class="link-btn" data-i18n="tutSkip"></button>
+        </div>
+        <div class="tut-body" id="tut-body">
+          <div class="tut-art" id="tut-art"></div>
+          <h2 id="tut-title"></h2>
+          <p id="tut-text"></p>
+          <ul class="tut-tips" id="tut-tips"></ul>
+        </div>
+        <div class="tut-nav">
+          <button id="tut-prev" class="icon-btn" data-i18n-title="tutBack">
+            <svg viewBox="0 0 24 24" width="22" height="22"><path d="M15 5 L8 12 L15 19" stroke="currentColor" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="dots" id="tut-dots"></div>
+          <button id="tut-next" class="btn primary"></button>
+        </div>
+      </div>
+    </section>
+
+    <div id="loading"><div class="spinner"></div></div>
+
+  </body>
+</html>
